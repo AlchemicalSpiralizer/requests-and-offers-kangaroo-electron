@@ -1,0 +1,13 @@
+  ipcMain.handle('create-network', async () => {
+    const crypto = require('crypto');
+    const randomSeed = crypto.randomBytes(32).toString('hex');
+    RUN_OPTIONS.networkSeed = randomSeed;
+    console.log('Created new network with seed:', randomSeed);
+    return randomSeed;
+  });
+  
+  ipcMain.handle('join-network', async (_e, inviteCode: string) => {
+    RUN_OPTIONS.networkSeed = inviteCode;
+    console.log('Joining network with seed:', inviteCode);
+    return inviteCode;
+  });

@@ -1,0 +1,11 @@
+// Dynamic app ID that can be set based on network instance
+export let DYNAMIC_APP_ID: string = HAPP_APP_ID;
+
+export function setDynamicAppId(instanceName: string): void {
+  const sanitizedName = instanceName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  DYNAMIC_APP_ID = `requests_and_offers_${sanitizedName}`;
+}
+
+export function getDynamicAppId(): string {
+  return DYNAMIC_APP_ID;
+}

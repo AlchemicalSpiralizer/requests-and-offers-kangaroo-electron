@@ -1,0 +1,34 @@
+  ipcMain.handle('setup-network', async (_e, config: { action: 'create' | 'join', instanceName: string, networkSeed?: string }) => {
+    const crypto = require('crypto');
+    
+    // Sanitize instance name for use in app ID (lowercase, replace spaces with underscores)
+    const sanitizedName = config.instanceName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const appId = `requests_and_offers_${sanitizedName}`;
+    
+    let networkSeed: string;
+    if (config.action === 'create') {
+      // Generate random seed for new network
+      networkSeed = crypto.randomBytes(32).toString('hex');
+    } else {
+      // Use provided seed for joining
+      if (!config.networkSeed) {
+        throw new Error('Network seed required to join network');
+      }
+      networkSeed = config.networkSeed;
+    }
+    
+    // Save network configuration
+    KANGAROO_FILESYSTEM.saveNetworkConfig({
+      instanceName: config.instanceName,
+      networkSeed: networkSeed
+    });
+    
+    // Update RUN_OPTIONS with the network seed
+    RUN_OPTIONS.networkSeed = networkSeed;
+    
+    // We need to make HAPP_APP_ID dynamic - this is the tricky part
+    // For now, store it so launch can use it
+    (global as any).DYNAMIC_APP_ID = appId;
+    
+    return { networkSeed, appId };
+  });

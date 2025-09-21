@@ -172,15 +172,6 @@ app.whenReady().then(async () => {
    */
   let splashScreenType: SplashScreenType;
   let startImmediately = false;
-// Check for network configuration
-  if (!KANGAROO_FILESYSTEM.hasNetworkConfig()) {
-    splashScreenType = SplashScreenType.NetworkSetup;
-    startImmediately = false;
-  } else {
-    const networkConfig = KANGAROO_FILESYSTEM.loadNetworkConfig();
-    if (networkConfig) {
-      RUN_OPTIONS.networkSeed = networkConfig.networkSeed;
-  }
 
   if (KANGAROO_CONFIG.passwordMode === 'no-password') {
     splashScreenType = SplashScreenType.LoadingOnly;
@@ -192,7 +183,6 @@ app.whenReady().then(async () => {
       splashScreenType = SplashScreenType.PasswordSetup;
     }
   } else if (KANGAROO_CONFIG.passwordMode === 'password-optional') {
-
     const keystoreInitialized = KANGAROO_FILESYSTEM.keystoreInitialized();
     const randomPwExists = KANGAROO_FILESYSTEM.randomPasswordExists();
     if (keystoreInitialized && randomPwExists) {
@@ -210,7 +200,6 @@ app.whenReady().then(async () => {
       }\nRandom pw exists: ${KANGAROO_FILESYSTEM.randomPasswordExists()}`
     );
   }
-}
 
   /**
    * IPC handlers
@@ -282,25 +271,6 @@ app.whenReady().then(async () => {
       app.quit();
     }
   }),
-ipcMain.handle('setup-network', async (_e, config: { action: 'create' | 'join', instanceName: string, networkSeed?: string }) => {
-    const crypto = require('crypto');
-    
-    let networkSeed: string;
-    if (config.action === 'create') {
-      networkSeed = crypto.randomBytes(32).toString('hex');
-    } else {
-      if (!config.networkSeed) throw new Error('Network seed required');
-      networkSeed = config.networkSeed;
-    }
-    
-    KANGAROO_FILESYSTEM.saveNetworkConfig({
-      instanceName: config.instanceName,
-      networkSeed: networkSeed
-    });
-    
-    RUN_OPTIONS.networkSeed = networkSeed;
-    return { networkSeed, instanceName: config.instanceName };
-  });
     // ------------------------------------------------------------------------------------
 
     (SPLASH_SCREEN_WINDOW = createSplashWindow(splashScreenType));
